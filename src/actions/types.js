@@ -1,0 +1,1 @@
+export const RISK_CHANGED = 'RISK_CHANGED'
