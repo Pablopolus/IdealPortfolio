@@ -39,7 +39,7 @@ class Investments extends Component {
     }
 
     getFloatValue = (number) => {
-        return number.replace('US$', '').replace('.', '').replace(',', '.')
+        return number.replace('US$', '').replace(/\./g, '').replace(',', '.')
     }
 
     setInitialState = () => {
@@ -106,21 +106,26 @@ class Investments extends Component {
         removeInvestments.forEach(toRemoveInvestment => {
             let firstToAdd = addInvestments[0]
             let investmentResult = parseFloat(firstToAdd.difference) + parseFloat(toRemoveInvestment.difference)
-
             if (investmentResult < 0) {
-                let transferAmmount = toRemoveInvestment.difference - investmentResult.toFixed(2)
+                let transferAmmount = parseFloat(toRemoveInvestment.difference) - parseFloat(investmentResult.toFixed(2))
                 transferAmmount = transferAmmount.toFixed(2)
                 transferAmmount = transferAmmount.replace('-', '$')
                 transfers.push(`Transfer ${transferAmmount} from ${toRemoveInvestment.investmentCategory} to ${firstToAdd.investmentCategory}`)
-                addInvestments.shift()
                 const removeInvestment = toRemoveInvestment
 
                 while (addInvestments.length > 0 && investmentResult < 0) {
+                    addInvestments.shift()
                     removeInvestment.difference = investmentResult.toFixed(2)
                     firstToAdd = addInvestments[0]
                     investmentResult = parseFloat(firstToAdd.difference) + parseFloat(removeInvestment.difference)
-                    transferAmmount = toRemoveInvestment.difference
-                    transferAmmount = transferAmmount.replace('-', '$')
+                    if (investmentResult > 0) {
+                        transferAmmount = toRemoveInvestment.difference
+                        addInvestments[0].difference = investmentResult.toFixed(2)
+                    } else {
+                        transferAmmount = parseFloat(toRemoveInvestment.difference) - parseFloat(investmentResult.toFixed(2))
+                        transferAmmount = transferAmmount.toFixed(2)
+                    }
+                    transferAmmount = transferAmmount.toString().replace('-', '$')
                     transfers.push(`Transfer ${transferAmmount} from ${removeInvestment.investmentCategory} to ${firstToAdd.investmentCategory}`)
                 }
             } else {
